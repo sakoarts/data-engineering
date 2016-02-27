@@ -19,6 +19,7 @@ for i in article:
 	for j in author:
 		data=data+unicode(author[index2].firstChild.nodeValue+"|")+unicode(article[index].attributes['key'].value+"|")+(unicode(article[index].attributes['mdate'].value+"|"))+(unicode(year[0].firstChild.nodeValue+"|"))+(unicode(title[0].firstChild.nodeValue+"|"))+(unicode(journal[0].firstChild.nodeValue+"|"))+('\n')
 		index2+=1	
+	print title
 	index+=1
 out_file.write(data)
 out_file.close()
