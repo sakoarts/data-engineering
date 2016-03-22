@@ -72,10 +72,11 @@ public class DBLPCommunityDetection {
         Graph<String, NullValue, Double> tgraph;
         System.out.println("Loading Graph from Memory");
         tgraph = Graph.fromDataSet(dEdges, env);
-        DataSet<Vertex<String, Long>> finVertices = tgraph.getVertices().map(new MapFunction<Vertex<String,NullValue>, Vertex<String,Long>>() {
+        List<String> dVertices = tgraph.getVertexIds().collect();
+        DataSet<Vertex<String, Long>> finVertices = tgraph.getVertices().map(new MapFunction<Vertex<String, NullValue>, Vertex<String, Long>>() {
             @Override
             public Vertex<String, Long> map(Vertex<String, NullValue> t) {
-                return new Vertex(t.f0, 0l);
+                return new Vertex(t.f0, Long.valueOf(dVertices.indexOf(t.f0)));
             }
         });
         Graph<String, Long, Double> graph;
@@ -85,13 +86,13 @@ public class DBLPCommunityDetection {
         System.out.println("Number of Vertices: " + graph.getVertices().count());
         System.out.println("INGELADEN");
         Graph<String, Long, Double> graphWithCommunities;
-        graphWithCommunities = graph.run(new CommunityDetection<String>(20, 0.8));
-
+        graphWithCommunities = graph.run(new CommunityDetection<String>(20, 0.5));
+        graphWithCommunities.getVertices().print();
     }
 
     public static void processLine(String[] s) {
         if (s.length > 1) {
-            edges.add(new Edge(s[0], s[1], Double.valueOf(edges.size())));
+            edges.add(new Edge(s[0], s[1], 1.0));
         }
     }
 
