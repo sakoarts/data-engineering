@@ -29,10 +29,10 @@ public class DBLPCommunityDetection {
     private static List<Vertex<String, Long>> vertices = new ArrayList();
 
     public static void input() throws IOException {
-        String csvFile = "C:/Users/Jos/Documents/Data Engineering/edges.csv";
+        String csvFile = "C:/Dropbox/TUe/data-engineering/edges-shorter.csv";
         BufferedReader br = null;
         String line = "";
-        String cvsSplitBy = ";";
+        String cvsSplitBy = ",";
         try {
             br = new BufferedReader(new FileReader(csvFile));
             int c = 0;
@@ -87,7 +87,14 @@ public class DBLPCommunityDetection {
         System.out.println("INGELADEN");
         Graph<String, Long, Double> graphWithCommunities;
         graphWithCommunities = graph.run(new CommunityDetection<String>(20, 0.5));
-        graphWithCommunities.getVertices().print();
+        //graphWithCommunities.getVertices().print();
+        
+        List<Vertex<String, Long>> ve = graphWithCommunities.getVertices().collect();
+        List<Edge<String, Double>> ed = graphWithCommunities.getEdges().collect();
+        
+        
+        VisualizeGraph g = new VisualizeGraph(ve, ed);
+        g.displayGraph();
     }
 
     public static void processLine(String[] s) {

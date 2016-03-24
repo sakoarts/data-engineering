@@ -8,7 +8,6 @@ package dataengineering12.quickstart;
 import java.util.List;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Vertex;
-import org.apache.flink.types.NullValue;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
 
