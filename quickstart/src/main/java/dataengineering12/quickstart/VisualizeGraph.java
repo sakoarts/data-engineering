@@ -45,6 +45,7 @@ public class VisualizeGraph {
         });
         edges.stream().forEach((tuple) -> {
             try {
+                
                 graph.addEdge((tuple.f0 + tuple.f1), tuple.f0, tuple.f1);
             } catch (Exception e) {
             }
@@ -84,7 +85,11 @@ public class VisualizeGraph {
         author = a;
         colorNeigh();
         String style = "z-index: 20; size: 30px; fill-color: green;";
+        try{
         graph.getNode(author).addAttribute("ui.style", style);
+        } catch (Exception e) {
+            
+        }
     }
 
     public Graph getGraph() {
