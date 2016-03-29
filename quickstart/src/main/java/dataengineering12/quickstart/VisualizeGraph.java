@@ -5,18 +5,14 @@
  */
 package dataengineering12.quickstart;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Vertex;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.stream.file.FileSinkImages;
-import org.graphstream.stream.file.FileSinkImages.LayoutPolicy;
-import org.graphstream.stream.file.FileSinkImages.OutputType;
-import org.graphstream.stream.file.FileSinkImages.Resolutions;
 
 /**
  *
@@ -27,6 +23,8 @@ public class VisualizeGraph {
     final private static Graph graph = new SingleGraph("DBLP Graph");
     final private List<Edge<String, Double>> edges;
     final private List<Vertex<String, Long>> vertices;
+    final private HashMap<Long, String> colors = new HashMap<>();
+    private String author;
 
     public VisualizeGraph(List<Vertex<String, Long>> V, List<Edge<String, Double>> E) {
         edges = E;
@@ -35,23 +33,10 @@ public class VisualizeGraph {
     }
 
     private void buildGraph() {
-        HashMap<Long, String> colors = new HashMap<>();
-
         vertices.stream().forEach((tuple) -> {
-            String color;
             try {
-                if (colors.containsKey(tuple.f1)) {
-                    color = colors.get(tuple.f1);
-                } else {
-                    Random rand = new Random();
-                    int r = (int) (rand.nextInt(256)); // / 2 +127);
-                    int g = (int) (rand.nextInt(256)); // / 2+127);
-                    int b = (int) (rand.nextInt(256)); // / 2+127);
-                    color = "fill-color: rgb(" + r + "," + g + "," + b + ");";
-                    colors.put(tuple.f1, color);
-                }
-
-                graph.addNode(tuple.f0).addAttribute("ui.style", color);
+                String style = getColor(tuple.f1);
+                graph.addNode(tuple.f0).addAttribute("ui.style", style);
             } catch (Exception e) {
                 System.out.println(e);
             }
@@ -64,20 +49,48 @@ public class VisualizeGraph {
         });
     }
 
+    private String getColor(Long l) {
+        if (colors.containsKey(l)) {
+            return colors.get(l);
+        } else {
+            Random rand = new Random();
+            int r = (int) (rand.nextInt(256) / 2 + 127);
+            int g = (int) (rand.nextInt(256) / 2 + 127);
+            int b = (int) (rand.nextInt(256) / 2 + 127);
+            String color = "fill-color: rgb(" + r + "," + g + "," + b + ");";
+            colors.put(l, color);
+            return color;
+        }
+    }
+
+    private void colorNeigh() {
+        String style = "z-index: 10; size: 15px; fill-color: rgb(0,128,0);";
+        vertices.stream().forEach((tuple) -> {
+            if (tuple.f0.equals(author)) {
+                vertices.stream().forEach((tuple2) -> {
+                    if (Objects.equals(tuple.f1, tuple2.f1)) {
+                        graph.getNode(tuple2.f0).addAttribute("ui.style", style);
+                    }
+                });
+
+            }
+        });
+
+    }
+
+    public void setAuthor(String a) {
+        author = a;
+        colorNeigh();
+        String style = "z-index: 20; size: 30px; fill-color: green;";
+        graph.getNode(author).addAttribute("ui.style", style);
+    }
+
     public Graph getGraph() {
         return graph;
     }
 
     public void displayGraph() {
         graph.display();
-    }
-
-    public void extractImage(int i) throws IOException {
-        FileSinkImages pic = new FileSinkImages(OutputType.PNG, Resolutions.VGA);
-
-        pic.setLayoutPolicy(LayoutPolicy.COMPUTED_FULLY_AT_NEW_IMAGE);
-
-        pic.writeAll(graph, "images/vdAalst_"+ i+".png");
     }
 
 }
