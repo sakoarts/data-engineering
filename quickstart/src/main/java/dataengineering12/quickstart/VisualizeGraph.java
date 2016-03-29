@@ -101,10 +101,10 @@ public class VisualizeGraph {
     }
 
     public void extractImage(int i) throws IOException {
-        FileSinkImages pic = new FileSinkImages(FileSinkImages.OutputType.PNG, FileSinkImages.Resolutions.VGA);
+        FileSinkImages pic = new FileSinkImages(FileSinkImages.OutputType.PNG, FileSinkImages.Resolutions.HD1080);
 
         pic.setLayoutPolicy(FileSinkImages.LayoutPolicy.COMPUTED_FULLY_AT_NEW_IMAGE);
 
-        pic.writeAll(graph, "images/fullGraph_" + i + ".png");
+        pic.writeAll(graph, "images/vdAalst_" + i + ".png");
     }
 }

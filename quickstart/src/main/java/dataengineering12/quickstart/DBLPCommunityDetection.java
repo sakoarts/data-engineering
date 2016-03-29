@@ -33,14 +33,14 @@ public class DBLPCommunityDetection {
     private static List<Vertex<String, Long>> vertices = new ArrayList();
 
     public static void input(int i) throws IOException {
-        String csvFile = "C:/Dropbox/TUe/data-engineering/edges-temporal-shorter.csv";
+        String csvFile = "C:/Dropbox/TUe/data-engineering/reduced.csv";
         BufferedReader br = null;
         String line = "";
-        String cvsSplitBy = ",";
+        String cvsSplitBy = ";";
         try {
             br = new BufferedReader(new FileReader(csvFile));
             int c = 0;
-            while ((line = br.readLine()) != null && c <= 20000) {
+            while ((line = br.readLine()) != null){ // && c <= 20000) {
                 // use comma as separator
                 //System.out.println("Line to read: " + line);
                 String[] toProcess = line.split(cvsSplitBy);
@@ -65,7 +65,7 @@ public class DBLPCommunityDetection {
     }
 
     public static void main(String[] args) throws Exception {
-        for (int i = 2001; i <= 2016; i++) {
+        for (int i = 1970; i <= 2016; i++) {
             System.out.println("Reading from CSV");
             input(i);
             System.out.println("CSV is in memory");
@@ -98,7 +98,7 @@ public class DBLPCommunityDetection {
             List<Edge<String, Double>> ed = graphWithCommunities.getEdges().collect();
 
             VisualizeGraph g = new VisualizeGraph(ve, ed);
-            //g.setAuthor("Wil M. P. van der Aalst");
+            g.setAuthor("Wil M. P. van der Aalst");
             //g.displayGraph();
             g.extractImage(i);
         }
