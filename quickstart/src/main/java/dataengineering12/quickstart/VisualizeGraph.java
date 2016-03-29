@@ -5,6 +5,7 @@
  */
 package dataengineering12.quickstart;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -13,6 +14,7 @@ import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Vertex;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.stream.file.FileSinkImages;
 
 /**
  *
@@ -93,4 +95,11 @@ public class VisualizeGraph {
         graph.display();
     }
 
+    public void extractImage(int i) throws IOException {
+        FileSinkImages pic = new FileSinkImages(FileSinkImages.OutputType.PNG, FileSinkImages.Resolutions.VGA);
+
+        pic.setLayoutPolicy(FileSinkImages.LayoutPolicy.COMPUTED_FULLY_AT_NEW_IMAGE);
+
+        pic.writeAll(graph, "images/fullGraph_" + i + ".png");
+    }
 }
