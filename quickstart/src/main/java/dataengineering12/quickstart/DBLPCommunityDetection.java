@@ -14,15 +14,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.library.CommunityDetection;
 import org.apache.flink.types.NullValue;
 
-import org.graphstream.stream.file.FileSinkImages;
-import org.graphstream.stream.file.FileSinkImages.LayoutPolicy;
-import org.graphstream.stream.file.FileSinkImages.OutputType;
-import org.graphstream.stream.file.FileSinkImages.Resolutions;
+
 
 /**
  *
@@ -33,7 +32,7 @@ public class DBLPCommunityDetection {
     private static List<Edge<String, Double>> edges = new ArrayList();
     private static List<Vertex<String, Long>> vertices = new ArrayList();
 
-    public static void input(int year) throws IOException {
+    public static void input(int i) throws IOException {
         String csvFile = "C:/Dropbox/TUe/data-engineering/edges-temporal-shorter.csv";
         BufferedReader br = null;
         String line = "";
@@ -41,11 +40,11 @@ public class DBLPCommunityDetection {
         try {
             br = new BufferedReader(new FileReader(csvFile));
             int c = 0;
-            while ((line = br.readLine()) != null) { //&& c <= 500000) {
+            while ((line = br.readLine()) != null && c <= 20000) {
                 // use comma as separator
                 //System.out.println("Line to read: " + line);
                 String[] toProcess = line.split(cvsSplitBy);
-                processLine(toProcess, year);
+                processLine(toProcess, i);
                 c++;
             }
         } catch (FileNotFoundException e) {
@@ -66,7 +65,7 @@ public class DBLPCommunityDetection {
     }
 
     public static void main(String[] args) throws Exception {
-        for (int i = 1970; i <= 2016; i++) {
+        for (int i = 2001; i <= 2016; i++) {
             System.out.println("Reading from CSV");
             input(i);
             System.out.println("CSV is in memory");
@@ -90,26 +89,24 @@ public class DBLPCommunityDetection {
             });
             Graph<String, Long, Double> graph;
             graph = Graph.fromDataSet(finVertices, dEdges, env);
-            //System.out.println("Computing number of edges");
-            //System.out.println("Number of Edges: " + graph.numberOfEdges());
             System.out.println("Number of Vertices: " + graph.getVertices().count());
             System.out.println("INGELADEN");
             Graph<String, Long, Double> graphWithCommunities;
             graphWithCommunities = graph.run(new CommunityDetection<String>(50, 0.5));
-            //graphWithCommunities.getVertices().print();
 
             List<Vertex<String, Long>> ve = graphWithCommunities.getVertices().collect();
             List<Edge<String, Double>> ed = graphWithCommunities.getEdges().collect();
 
             VisualizeGraph g = new VisualizeGraph(ve, ed);
+            //g.setAuthor("Wil M. P. van der Aalst");
             //g.displayGraph();
             g.extractImage(i);
         }
     }
 
-    public static void processLine(String[] s, int year) {
-        if (s.length > 1 && Integer.valueOf(s[2]) == year && (s[0].equals("Wil M. P. van der Aalst") || (s[1].equals("Wil M. P. van der Aalst")))) {
-            edges.add(new Edge(s[0], s[1], 1.0));
+    public static void processLine(String[] s, int i) {
+        if (s.length > 1 && Integer.valueOf(s[2]) == i){// && (s[0].equals("Wil M. P. van der Aalst") || (s[1].equals("Wil M. P. van der Aalst")))) {
+            edges.add(new Edge(s[0], s[1], 1.0));//Double.valueOf(s[2])));
         }
     }
 
