@@ -19,6 +19,11 @@ import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.library.CommunityDetection;
 import org.apache.flink.types.NullValue;
 
+import org.graphstream.stream.file.FileSinkImages;
+import org.graphstream.stream.file.FileSinkImages.LayoutPolicy;
+import org.graphstream.stream.file.FileSinkImages.OutputType;
+import org.graphstream.stream.file.FileSinkImages.Resolutions;
+
 /**
  *
  * @author Jos
@@ -28,19 +33,19 @@ public class DBLPCommunityDetection {
     private static List<Edge<String, Double>> edges = new ArrayList();
     private static List<Vertex<String, Long>> vertices = new ArrayList();
 
-    public static void input() throws IOException {
-        String csvFile = "C:/Dropbox/TUe/data-engineering/edges-shorter.csv";
+    public static void input(int year) throws IOException {
+        String csvFile = "C:/Dropbox/TUe/data-engineering/edges-temporal-shorter.csv";
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
         try {
             br = new BufferedReader(new FileReader(csvFile));
             int c = 0;
-            while ((line = br.readLine()) != null && c <= 1000000) {
+            while ((line = br.readLine()) != null) { //&& c <= 500000) {
                 // use comma as separator
                 //System.out.println("Line to read: " + line);
                 String[] toProcess = line.split(cvsSplitBy);
-                processLine(toProcess);
+                processLine(toProcess, year);
                 c++;
             }
         } catch (FileNotFoundException e) {
@@ -61,46 +66,52 @@ public class DBLPCommunityDetection {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Reading from CSV");
-        input();
-        System.out.println("CSV is in memory");
-        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-        System.out.println("Number of Edges in Array: " + edges.size());
-        DataSet<Edge<String, Double>> dEdges = env.fromCollection(edges);
-        //DataSet<Vertex<String, Long>> dVertices = env.fromCollection(vertices);
-
-        Graph<String, NullValue, Double> tgraph;
-        System.out.println("Loading Graph from Memory");
-        tgraph = Graph.fromDataSet(dEdges, env);
-        List<String> dVertices = tgraph.getVertexIds().collect();
-        DataSet<Vertex<String, Long>> finVertices = tgraph.getVertices().map(new MapFunction<Vertex<String, NullValue>, Vertex<String, Long>>() {
-            @Override
-            public Vertex<String, Long> map(Vertex<String, NullValue> t) {
-                return new Vertex(t.f0, Long.valueOf(dVertices.indexOf(t.f0)));
+        for (int i = 1970; i <= 2016; i++) {
+            System.out.println("Reading from CSV");
+            input(i);
+            System.out.println("CSV is in memory");
+            final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+            System.out.println("Number of Edges in Array: " + edges.size());
+            if (edges.size() == 0) {
+                continue;
             }
-        });
-        Graph<String, Long, Double> graph;
-        graph = Graph.fromDataSet(finVertices, dEdges, env);
-        //System.out.println("Computing number of edges");
-        //System.out.println("Number of Edges: " + graph.numberOfEdges());
-        System.out.println("Number of Vertices: " + graph.getVertices().count());
-        System.out.println("INGELADEN");
-        Graph<String, Long, Double> graphWithCommunities;
-        graphWithCommunities = graph.run(new CommunityDetection<String>(20, 0.5));
-        //graphWithCommunities.getVertices().print();
-        
-        List<Vertex<String, Long>> ve = graphWithCommunities.getVertices().collect();
-        List<Edge<String, Double>> ed = graphWithCommunities.getEdges().collect();
-        
-        
-        VisualizeGraph g = new VisualizeGraph(ve, ed);
-        g.displayGraph();
+            DataSet<Edge<String, Double>> dEdges = env.fromCollection(edges);
+            //DataSet<Vertex<String, Long>> dVertices = env.fromCollection(vertices);
+
+            Graph<String, NullValue, Double> tgraph;
+            System.out.println("Loading Graph from Memory");
+            tgraph = Graph.fromDataSet(dEdges, env);
+            List<String> dVertices = tgraph.getVertexIds().collect();
+            DataSet<Vertex<String, Long>> finVertices = tgraph.getVertices().map(new MapFunction<Vertex<String, NullValue>, Vertex<String, Long>>() {
+                @Override
+                public Vertex<String, Long> map(Vertex<String, NullValue> t) {
+                    return new Vertex(t.f0, Long.valueOf(dVertices.indexOf(t.f0)));
+                }
+            });
+            Graph<String, Long, Double> graph;
+            graph = Graph.fromDataSet(finVertices, dEdges, env);
+            //System.out.println("Computing number of edges");
+            //System.out.println("Number of Edges: " + graph.numberOfEdges());
+            System.out.println("Number of Vertices: " + graph.getVertices().count());
+            System.out.println("INGELADEN");
+            Graph<String, Long, Double> graphWithCommunities;
+            graphWithCommunities = graph.run(new CommunityDetection<String>(50, 0.5));
+            //graphWithCommunities.getVertices().print();
+
+            List<Vertex<String, Long>> ve = graphWithCommunities.getVertices().collect();
+            List<Edge<String, Double>> ed = graphWithCommunities.getEdges().collect();
+
+            VisualizeGraph g = new VisualizeGraph(ve, ed);
+            //g.displayGraph();
+            g.extractImage(i);
+        }
     }
 
-    public static void processLine(String[] s) {
-        if (s.length > 1) {
+    public static void processLine(String[] s, int year) {
+        if (s.length > 1 && Integer.valueOf(s[2]) == year && (s[0].equals("Wil M. P. van der Aalst") || (s[1].equals("Wil M. P. van der Aalst")))) {
             edges.add(new Edge(s[0], s[1], 1.0));
         }
     }
 
+    
 }
