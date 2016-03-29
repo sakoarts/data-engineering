@@ -1,1 +1,6 @@
 *.netbeans_automatic_build
+quickstart/images/vdAalst_2013.png
+*.png
+*.class
+quickstart/target/classes/dataengineering12/quickstart/VisualizeGraph.class
+*.class
